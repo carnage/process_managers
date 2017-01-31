@@ -5,7 +5,7 @@ namespace ProcessManagers\Handler;
 use ProcessManagers\Model\Order;
 use React\EventLoop\LoopInterface;
 
-class SocketHandler implements HandleOrderInterface
+class SocketHandler implements HandleMessageInterface
 {
     private $connDetails;
     /**

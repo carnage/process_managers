@@ -2,31 +2,34 @@
 
 namespace ProcessManagers\Actor;
 
-use ProcessManagers\Handler\HandleOrderInterface;
-use ProcessManagers\Model\Order;
+use ProcessManagers\Handler\AbstractMessageHandler;
+use ProcessManagers\Message\OrderCooked;
+use ProcessManagers\Message\OrderPriced;
+use ProcessManagers\PublishInterface;
 
-class AssistantManager implements HandleOrderInterface
+class AssistantManager extends AbstractMessageHandler
 {
     /**
-     * @var HandleOrderInterface
+     * @var PublishInterface
      */
-    private $next;
+    private $queue;
 
     const TAX_RATE = 20;
 
-    public function __construct(HandleOrderInterface $next)
+    public function __construct(PublishInterface $queue)
     {
-        $this->next = $next;
+        $this->queue = $queue;
     }
 
-    public function handle(Order $order)
+    protected function handleOrderCooked(OrderCooked $orderCooked)
     {
+        $order = $orderCooked->getOrder();
         $subTotal = $this->calculatePrice($order->getIngredients(), $order->getCookTime());
 
         $tax = $subTotal * (self::TAX_RATE / 100);
         $order->addPrices($subTotal, $tax, $subTotal+$tax);
 
-        $this->next->handle($order);
+        $this->queue->publish(new OrderPriced($order));
     }
 
     private function calculatePrice(array $ingredients, int $cookTime)

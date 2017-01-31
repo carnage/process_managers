@@ -2,13 +2,23 @@
 
 namespace ProcessManagers\Handler;
 
-use ProcessManagers\Model\Order;
+use ProcessManagers\Message\MessageInterface;
 
-class OrderPrinter implements HandleOrderInterface
+class OrderPrinter implements HandleMessageInterface
 {
-    public function handle(Order $order)
+    public function handle(MessageInterface $message)
     {
-        //var_dump($order);
-        echo $order->getTableNumber() . ': ' . $order->getOrderId() . "\n";
+        if (!method_exists($message, 'getOrder')) {
+            return;
+        }
+
+        $order = $message->getOrder();
+
+        echo $order->getTableNumber() . ': ' . $order->getOrderId() .' cooked by ' . $order->getCookedBy() . "\n";
+    }
+
+    public static function getHandleMethod(string $message): string
+    {
+        return 'handle';
     }
 }

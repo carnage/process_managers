@@ -13,6 +13,7 @@ class Order
     private $cookTime;
     private $ingredients = [];
     private $paid;
+    private $cookedBy;
 
     public function __construct(string $orderId, int $tableNumber, array $items)
     {
@@ -93,12 +94,19 @@ class Order
         return $this->paid;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getCookedBy()
+    {
+        return $this->cookedBy;
+    }
 
-
-    public function cook(int $cookTime, array $ingredients)
+    public function cook(int $cookTime, array $ingredients, string $by)
     {
         $this->cookTime = $cookTime;
         $this->ingredients = $ingredients;
+        $this->cookedBy = $by;
     }
 
     public function addPrices($subTotal, $tax, $total)

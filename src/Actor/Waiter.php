@@ -2,13 +2,16 @@
 
 namespace ProcessManagers\Actor;
 
-use ProcessManagers\Handler\HandleOrderInterface;
+use ProcessManagers\Handler\HandleMessageInterface;
+use ProcessManagers\Message\OrderPlaced;
 use ProcessManagers\Model\Order;
+use ProcessManagers\PublishInterface;
+use ProcessManagers\Topics;
 use ProcessManagers\UUID;
 
 class Waiter
 {
-    private $next;
+    private $messageQueue;
     /**
      * @var UUID
      */
@@ -16,11 +19,11 @@ class Waiter
 
     /**
      * Waiter constructor.
-     * @param $next
+     * @param $messageQueue
      */
-    public function __construct(HandleOrderInterface $next, UUID $UUID)
+    public function __construct(PublishInterface $messageQueue, UUID $UUID)
     {
-        $this->next = $next;
+        $this->messageQueue = $messageQueue;
         $this->UUID = $UUID;
     }
 
@@ -29,7 +32,7 @@ class Waiter
         $uuid = $this->UUID->generateIdentity();
         $order = new Order($uuid, $tableNumber, $items);
 
-        $this->next->handle($order);
+        $this->messageQueue->publish(new OrderPlaced($order));
 
         return $uuid;
     }

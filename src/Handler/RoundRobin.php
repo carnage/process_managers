@@ -2,21 +2,26 @@
 
 namespace ProcessManagers\Handler;
 
-use ProcessManagers\Model\Order;
+use ProcessManagers\Message\MessageInterface;
 
-class RoundRobin implements HandleOrderInterface
+class RoundRobin implements HandleMessageInterface
 {
     private $handlers;
 
-    public function __construct(HandleOrderInterface ... $handleOrderInterfaces)
+    public function __construct(HandleMessageInterface ... $handleOrderInterfaces)
     {
         $this->handlers = $handleOrderInterfaces;
     }
 
-    public function handle(Order $order)
+    public function handle(MessageInterface $order)
     {
         $handler = array_shift($this->handlers);
         $handler->handle($order);
         array_push($this->handlers, $handler);
+    }
+
+    public static function getHandleMethod(string $message): string
+    {
+        return 'handle';
     }
 }

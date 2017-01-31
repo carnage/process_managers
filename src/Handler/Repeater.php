@@ -4,11 +4,11 @@ namespace ProcessManagers\Handler;
 
 use ProcessManagers\Model\Order;
 
-class Repeater implements HandleOrderInterface
+class Repeater implements HandleMessageInterface
 {
     private $handlers;
 
-    public function __construct(HandleOrderInterface ...$handleOrderInterfaces)
+    public function __construct(HandleMessageInterface ...$handleOrderInterfaces)
     {
         $this->handlers = $handleOrderInterfaces;
     }

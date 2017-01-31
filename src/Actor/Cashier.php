@@ -2,25 +2,28 @@
 
 namespace ProcessManagers\Actor;
 
-use ProcessManagers\Handler\HandleOrderInterface;
-use ProcessManagers\Model\Order;
+use ProcessManagers\Handler\AbstractMessageHandler;
+use ProcessManagers\Message\OrderPaid;
+use ProcessManagers\Message\OrderPriced;
+use ProcessManagers\PublishInterface;
 
-class Cashier implements HandleOrderInterface
+class Cashier extends AbstractMessageHandler
 {
     /**
-     * @var HandleOrderInterface
+     * @var PublishInterface
      */
-    private $next;
+    private $queue;
 
-    public function __construct(HandleOrderInterface $next)
+    public function __construct(PublishInterface $queue)
     {
-        $this->next = $next;
+        $this->queue = $queue;
     }
 
-    public function handle(Order $order)
+    protected function handleOrderPriced(OrderPriced $orderPriced)
     {
+        $order = $orderPriced->getOrder();
         $order->paid();
 
-        $this->next->handle($order);
+        $this->queue->publish(new OrderPaid($order));
     }
 }

@@ -2,35 +2,43 @@
 
 namespace ProcessManagers\Actor;
 
-use ProcessManagers\Handler\HandleOrderInterface;
+use ProcessManagers\Handler\AbstractMessageHandler;
+use ProcessManagers\Handler\HandleMessageInterface;
+use ProcessManagers\Message\OrderCooked;
+use ProcessManagers\Message\OrderPlaced;
+use ProcessManagers\MessageQueue;
 use ProcessManagers\Model\Order;
+use ProcessManagers\PublishInterface;
 
-class Cook implements HandleOrderInterface
+class Cook extends AbstractMessageHandler
 {
-    /**
-     * @var HandleOrderInterface
-     */
-    private $next;
-
-    const COOK_TIME = 2;
-
     /**
      * @var
      */
     private $cookTime;
 
-    public function __construct(HandleOrderInterface $next, $cookTime)
+    /**
+     * @var PublishInterface
+     */
+    private $queue;
+    /**
+     * @var
+     */
+    private $name;
+
+    public function __construct(PublishInterface $queue, $cookTime, $name)
     {
-        $this->next = $next;
         $this->cookTime = $cookTime;
+        $this->queue = $queue;
+        $this->name = $name;
     }
 
-    public function handle(Order $order)
+    protected function handleOrderPlaced(OrderPlaced $orderPlaced)
     {
+        $order = $orderPlaced->getOrder();
         $ingredients = $this->getIngredientsFor($order->getItems());
-        $order->cook(self::COOK_TIME, $ingredients);
-        sleep(self::COOK_TIME);
-        $this->next->handle($order);
+        $order->cook($this->cookTime, $ingredients, $this->name);
+        $this->queue->publish(new OrderCooked($order));
     }
 
     private function getIngredientsFor($items)

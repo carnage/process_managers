@@ -9,11 +9,11 @@ use React\Socket\Server;
 class SocketUnhandler
 {
     /**
-     * @var HandleOrderInterface
+     * @var HandleMessageInterface
      */
     private $handler;
 
-    public function __construct(Server $socket, HandleOrderInterface $handler)
+    public function __construct(Server $socket, HandleMessageInterface $handler)
     {
         $socket->on('connection', [$this, 'onConnect']);
 
@@ -29,7 +29,7 @@ class SocketUnhandler
             if (substr($buffer, -4) === "\r\n\r\n") {
                 /** @var Order $message */
                 $message = unserialize($buffer);
-                /** @var HandleOrderInterface */
+                /** @var HandleMessageInterface */
                 $this->handler->handle($message);
 
                 $conn->close();
