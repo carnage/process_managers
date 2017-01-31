@@ -1,0 +1,39 @@
+version: '2'
+
+services:
+  app: &app
+    build: .
+    volumes:
+    - .:/app
+    working_dir: /app
+
+  waiter:
+    <<: *app
+    command: php bin/waiter.php
+    depends_on:
+    - cook1
+    - cook2
+    - cook3
+    - assist
+    - cashier
+
+  cook1:
+    <<: *app
+    command: php bin/cook.php
+
+  cook2:
+    <<: *app
+    command: php bin/cook.php
+
+  cook3:
+    <<: *app
+    command: php bin/cook.php
+
+  assist:
+    <<: *app
+    command: php bin/assist.php
+
+  cashier:
+    <<: *app
+    command: php bin/cashier.php
+

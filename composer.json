@@ -1,0 +1,12 @@
+{
+    "autoload": {
+        "psr-4": {
+            "ProcessManagers\\": "src/"
+        }
+    },
+
+    "require": {
+        "cboden/ratchet": "^0.3.6",
+        "react/http": "^0.4.2"
+    }
+}
