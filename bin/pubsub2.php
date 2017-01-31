@@ -13,11 +13,6 @@ use ProcessManagers\Actor\Cook;
 use ProcessManagers\Actor\Waiter;
 use ProcessManagers\Handler\OrderPrinter;
 use ProcessManagers\Handler\RoundRobin;
-use ProcessManagers\Message\MessageInterface;
-use ProcessManagers\Message\OrderCooked;
-use ProcessManagers\Message\OrderPaid;
-use ProcessManagers\Message\OrderPlaced;
-use ProcessManagers\Message\OrderPriced;
 use ProcessManagers\MessageQueue;
 use ProcessManagers\UUID;
 
@@ -32,10 +27,10 @@ $printer = new OrderPrinter();
 
 $cookHandler = new RoundRobin($cook, $cook2);
 
-$messageBus->subscribe(OrderPlaced::class, $cookHandler);
-$messageBus->subscribe(OrderCooked::class, $assist);
-$messageBus->subscribe(OrderPriced::class, $cashier);
-$messageBus->subscribe(OrderPaid::class, $printer);
+$messageBus->subscribe(\ProcessManagers\Topics::ORDER_PLACED, $cookHandler);
+$messageBus->subscribe(\ProcessManagers\Topics::ORDER_COOKED, $assist);
+$messageBus->subscribe(\ProcessManagers\Topics::ORDER_PRICED, $cashier);
+$messageBus->subscribe(\ProcessManagers\Topics::ORDER_PAID, $printer);
 
 for ($i = 0; $i<25; $i++) {
     $waiter->placeOrder($i, ['cake']);
