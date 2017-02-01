@@ -6,6 +6,8 @@ use ProcessManagers\Message\MessageInterface;
 
 class OrderPrinter implements HandleMessageInterface
 {
+    use AlwaysReady;
+
     public function handle(MessageInterface $message)
     {
         if (!method_exists($message, 'getOrder')) {
@@ -21,4 +23,5 @@ class OrderPrinter implements HandleMessageInterface
     {
         return 'handle';
     }
+
 }

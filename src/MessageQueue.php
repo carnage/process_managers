@@ -14,6 +14,7 @@ class MessageQueue implements PublishInterface
     {
         $messageClass = get_class($message);
         $interfaces = class_implements($messageClass);
+        array_unshift($interfaces, $message->getCorrId());
         array_unshift($interfaces, $messageClass);
 
         foreach ($interfaces as $messageType) {
@@ -28,10 +29,6 @@ class MessageQueue implements PublishInterface
 
     public function subscribe(string $messageType, HandleMessageInterface $handler)
     {
-        $method = $handler::getHandleMethod($messageType);
-        if (!method_exists($handler, $method)) {
-            throw new \LogicException(sprintf('Invalid handler for message %s', $messageType));
-        }
         $this->subs[$messageType][] = $handler;
     }
 }

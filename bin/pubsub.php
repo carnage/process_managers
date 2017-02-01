@@ -13,7 +13,6 @@ use ProcessManagers\Actor\Cook;
 use ProcessManagers\Actor\Waiter;
 use ProcessManagers\Handler\OrderPrinter;
 use ProcessManagers\Handler\RoundRobin;
-use ProcessManagers\Message\MessageInterface;
 use ProcessManagers\Message\OrderCooked;
 use ProcessManagers\Message\OrderPaid;
 use ProcessManagers\Message\OrderPlaced;

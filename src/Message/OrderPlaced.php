@@ -4,12 +4,13 @@ namespace ProcessManagers\Message;
 
 use ProcessManagers\Model\Order;
 
-class OrderPlaced implements MessageInterface
+class OrderPlaced extends AbstractMessage
 {
     private $order;
 
-    public function __construct(Order $order)
+    public function __construct(string $id, string $causeId, string $corrId, Order $order)
     {
+        parent::__construct($id, $causeId, $corrId);
         $this->order = $order;
     }
 

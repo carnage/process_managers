@@ -8,4 +8,5 @@ interface HandleMessageInterface
 {
     public function handle(MessageInterface $message);
     public static function getHandleMethod(string $message): string;
+    public function isReady();
 }

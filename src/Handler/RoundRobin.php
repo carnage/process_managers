@@ -6,6 +6,7 @@ use ProcessManagers\Message\MessageInterface;
 
 class RoundRobin implements HandleMessageInterface
 {
+    use AlwaysReady;
     private $handlers;
 
     public function __construct(HandleMessageInterface ... $handleOrderInterfaces)

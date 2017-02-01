@@ -3,9 +3,11 @@
 namespace ProcessManagers\Actor;
 
 use ProcessManagers\Handler\AbstractMessageHandler;
+use ProcessManagers\Message\MessageFactory;
 use ProcessManagers\Message\OrderPaid;
 use ProcessManagers\Message\OrderPriced;
 use ProcessManagers\PublishInterface;
+use React\EventLoop\LoopInterface;
 
 class Cashier extends AbstractMessageHandler
 {
@@ -14,9 +16,21 @@ class Cashier extends AbstractMessageHandler
      */
     private $queue;
 
-    public function __construct(PublishInterface $queue)
+    /**
+     * @var LoopInterface
+     */
+    private $loop;
+
+    /**
+     * @var MessageFactory
+     */
+    private $messageFactory;
+
+    public function __construct(LoopInterface $loop, PublishInterface $queue, MessageFactory $messageFactory)
     {
         $this->queue = $queue;
+        $this->loop = $loop;
+        $this->messageFactory = $messageFactory;
     }
 
     protected function handleOrderPriced(OrderPriced $orderPriced)
@@ -24,6 +38,11 @@ class Cashier extends AbstractMessageHandler
         $order = $orderPriced->getOrder();
         $order->paid();
 
-        $this->queue->publish(new OrderPaid($order));
+        $this->loop->addTimer(1,function () use ($orderPriced) {
+            $this->queue->publish(
+                $this->messageFactory->createOrderMessageFromPrevious(OrderPaid::class, $orderPriced)
+            );
+            $this->ready = true;
+        });
     }
 }

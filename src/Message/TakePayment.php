@@ -1,10 +1,9 @@
 <?php
-
 namespace ProcessManagers\Message;
 
 use ProcessManagers\Model\Order;
 
-class OrderPriced extends AbstractMessage
+class TakePayment extends AbstractMessage
 {
     private $order;
 
