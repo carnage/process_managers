@@ -10,7 +10,7 @@ abstract class AbstractMessageHandler implements HandleMessageInterface
 
     public function handle(MessageInterface $message)
     {
-        $method = self::getHandleMethod(get_class($message));
+        $method = static::getHandleMethod(get_class($message));
         if (!method_exists($this, $method)) {
             return;
         }

@@ -6,6 +6,7 @@ use ProcessManagers\Handler\AbstractMessageHandler;
 use ProcessManagers\Message\MessageFactory;
 use ProcessManagers\Message\OrderCooked;
 use ProcessManagers\Message\OrderPriced;
+use ProcessManagers\Message\PriceOrder;
 use ProcessManagers\PublishInterface;
 use React\EventLoop\LoopInterface;
 
@@ -33,7 +34,7 @@ class AssistantManager extends AbstractMessageHandler
         $this->messageFactory = $messageFactory;
     }
 
-    protected function handleOrderCooked(OrderCooked $orderCooked)
+    protected function handlePriceOrder(PriceOrder $orderCooked)
     {
         $order = $orderCooked->getOrder();
         $subTotal = $this->calculatePrice($order->getIngredients(), $order->getCookTime());

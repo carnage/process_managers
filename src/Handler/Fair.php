@@ -6,7 +6,7 @@ use ProcessManagers\Message\MessageInterface;
 use ProcessManagers\Model\Order;
 use React\EventLoop\LoopInterface;
 
-class Fair implements HandleMessageInterface
+class Fair implements HandleMessageInterface, QueueLengthInterface
 {
     use AlwaysReady;
     private $handlers;
@@ -41,5 +41,10 @@ class Fair implements HandleMessageInterface
     public static function getHandleMethod(string $message): string
     {
         return 'handle';
+    }
+
+    public function getQueueLength(): int
+    {
+        return count($this->queue);
     }
 }

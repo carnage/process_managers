@@ -6,6 +6,8 @@ use ProcessManagers\Handler\AbstractMessageHandler;
 use ProcessManagers\Message\MessageFactory;
 use ProcessManagers\Message\OrderPaid;
 use ProcessManagers\Message\OrderPriced;
+use ProcessManagers\Message\PriceOrder;
+use ProcessManagers\Message\TakePayment;
 use ProcessManagers\PublishInterface;
 use React\EventLoop\LoopInterface;
 
@@ -33,7 +35,7 @@ class Cashier extends AbstractMessageHandler
         $this->messageFactory = $messageFactory;
     }
 
-    protected function handleOrderPriced(OrderPriced $orderPriced)
+    protected function handleTakePayment(TakePayment $orderPriced)
     {
         $order = $orderPriced->getOrder();
         $order->paid();

@@ -4,6 +4,7 @@ namespace ProcessManagers\Actor;
 
 use ProcessManagers\Handler\AbstractMessageHandler;
 use ProcessManagers\Handler\HandleMessageInterface;
+use ProcessManagers\Message\CookFood;
 use ProcessManagers\Message\MessageFactory;
 use ProcessManagers\Message\OrderCooked;
 use ProcessManagers\Message\OrderPlaced;
@@ -45,7 +46,7 @@ class Cook extends AbstractMessageHandler
         $this->messageFactory = $messageFactory;
     }
 
-    protected function handleOrderPlaced(OrderPlaced $orderPlaced)
+    protected function handleCookFood(CookFood $orderPlaced)
     {
         $order = $orderPlaced->getOrder();
         $ingredients = $this->getIngredientsFor($order->getItems());
