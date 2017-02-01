@@ -21,7 +21,7 @@ class QueueHandler implements HandleMessageInterface, QueueLengthInterface
         $loop->addPeriodicTimer(0.1, function () {
             if ($this->handler->isReady()) {
                 $order = array_shift($this->queue);
-                if ($order && rand(0,3)) {
+                if ($order) {
                     $this->handler->handle($order);
                 }
             }

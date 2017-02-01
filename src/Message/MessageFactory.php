@@ -27,12 +27,21 @@ class MessageFactory
         return new $type($messageId, $causeId, $corrId, $order);
     }
 
-    public function createOrderMessageFromPrevious(string $type, AbstractMessage $previous)
+    public function createOrderMessageFromPrevious(string $type, MessageInterface $previous)
     {
         $messageId = $this->uuid->generateIdentity();
         $corrId = $previous->getCorrId();
         $causeId = $previous->getId();
 
         return new $type($messageId, $causeId, $corrId, $previous->getOrder());
+    }
+
+    public function createDelayedMessage(int $ttl, MessageInterface $message)
+    {
+        $messageId = $this->uuid->generateIdentity();
+        $corrId = $message->getCorrId();
+        $causeId = $message->getCauseId();
+
+        return new PublishAt($messageId, $causeId, $corrId, $ttl, $message);
     }
 }

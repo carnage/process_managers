@@ -5,7 +5,9 @@ namespace ProcessManagers\Actor\OrderStates;
 use ProcessManagers\Handler\AbstractMessageHandler;
 use ProcessManagers\Handler\AlwaysReady;
 use ProcessManagers\Message\CookFood;
+use ProcessManagers\Message\CookingTimedOut;
 use ProcessManagers\Message\MessageFactory;
+use ProcessManagers\Message\MessageInterface;
 use ProcessManagers\Message\OrderCooked;
 use ProcessManagers\Message\OrderPaid;
 use ProcessManagers\Message\OrderPlaced;
@@ -32,6 +34,8 @@ class Zimba extends AbstractMessageHandler
      */
     private $messageFactory;
 
+    private $cooking;
+
     public function __construct(PublishInterface $queue, MessageFactory $messageFactory, callable $done)
     {
         $this->done = $done;
@@ -46,8 +50,16 @@ class Zimba extends AbstractMessageHandler
         );
     }
 
+    public function handleCookingTimedOut(CookingTimedOut $orderMessage)
+    {
+        if ($this->cooking) {
+            $this->doCook($orderMessage);
+        }
+    }
+
     public function handleOrderCooked(OrderCooked $orderMessage)
     {
+        $this->cooking = false;
         $this->queue->publish(
             $this->messageFactory->createOrderMessageFromPrevious(OrderSpiked::class, $orderMessage)
         );
@@ -64,8 +76,25 @@ class Zimba extends AbstractMessageHandler
 
     public function handleOrderPaid(OrderPaid $orderMessage)
     {
+        $this->doCook($orderMessage);
+    }
+
+
+    /**
+     * @param MessageInterface $orderMessage
+     */
+    private function doCook(MessageInterface $orderMessage)
+    {
         $this->queue->publish(
             $this->messageFactory->createOrderMessageFromPrevious(CookFood::class, $orderMessage)
+        );
+
+        $this->cooking = true;
+        $this->queue->publish(
+            $this->messageFactory->createDelayedMessage(
+                30,
+                $this->messageFactory->createOrderMessageFromPrevious(CookingTimedOut::class, $orderMessage)
+            )
         );
     }
 }
