@@ -9,6 +9,7 @@ use ProcessManagers\Message\CookingTimedOut;
 use ProcessManagers\Message\MessageFactory;
 use ProcessManagers\Message\MessageInterface;
 use ProcessManagers\Message\OrderCooked;
+use ProcessManagers\Message\OrderCookedTwice;
 use ProcessManagers\Message\OrderPaid;
 use ProcessManagers\Message\OrderPlaced;
 use ProcessManagers\Message\OrderPriced;
@@ -34,7 +35,9 @@ class British extends AbstractMessageHandler
      */
     private $messageFactory;
 
-    private $cooking;
+    private $cooking = false;
+
+    private $cooked = false;
 
     public function __construct(PublishInterface $queue, MessageFactory $messageFactory, callable $done)
     {
@@ -51,9 +54,16 @@ class British extends AbstractMessageHandler
     public function handleOrderCooked(OrderCooked $orderMessage)
     {
         $this->cooking = false;
-        $this->queue->publish(
-            $this->messageFactory->createOrderMessageFromPrevious(PriceOrder::class, $orderMessage)
-        );
+        if ($this->cooked) {
+            $this->queue->publish(
+                $this->messageFactory->createOrderMessageFromPrevious(OrderCookedTwice::class, $orderMessage)
+            );
+        } else {
+            $this->cooked = true;
+            $this->queue->publish(
+                $this->messageFactory->createOrderMessageFromPrevious(PriceOrder::class, $orderMessage)
+            );
+        }
     }
 
     public function handleCookingTimedOut(CookingTimedOut $orderMessage)

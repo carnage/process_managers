@@ -36,7 +36,7 @@ class Waiter
     public function placeOrder(int $tableNumber, array $items): string
     {
         $uuid = $this->UUID->generateIdentity();
-        $order = new Order($uuid, $tableNumber, $items, rand(0,1));
+        $order = new Order($uuid, $tableNumber, $items, 0);
 
         $this->messageQueue->publish(
             $this->messageFactory->createOrderMessage(OrderPlaced::class, $order)

@@ -11,6 +11,7 @@ use ProcessManagers\Actor\Runner;
 use ProcessManagers\Actor\Waiter;
 use ProcessManagers\Handler\Fair;
 use ProcessManagers\Handler\Flakey;
+use ProcessManagers\Handler\OrderErrorPrinter;
 use ProcessManagers\Handler\OrderPrinter;
 use ProcessManagers\Handler\QueueHandler;
 use ProcessManagers\Handler\RoundRobin;
@@ -18,6 +19,7 @@ use ProcessManagers\Handler\TtlQueue;
 use ProcessManagers\Message\CookFood;
 use ProcessManagers\Message\MessageInterface;
 use ProcessManagers\Message\OrderCooked;
+use ProcessManagers\Message\OrderCookedTwice;
 use ProcessManagers\Message\OrderPaid;
 use ProcessManagers\Message\OrderPlaced;
 use ProcessManagers\Message\OrderPriced;
@@ -64,13 +66,14 @@ $queues =[
 ];
 
 $printer = new OrderPrinter();
+$doubleCook = new OrderErrorPrinter();
 
 $messageBus->subscribe(CookFood::class, $cookHandler);
 $messageBus->subscribe(PriceOrder::class, $assistHandler);
 $messageBus->subscribe(TakePayment::class, $cashier);
 $messageBus->subscribe(OrderSpiked::class, $printer);
 $messageBus->subscribe(PublishAt::class, $alarmClock);
-
+$messageBus->subscribe(OrderCookedTwice::class, $doubleCook);
 
 
 $messageBus->subscribe(MessageInterface::class, $runner);
@@ -78,7 +81,7 @@ $messageBus->subscribe(MessageInterface::class, $runner);
 
 include_once 'status.php';
 
-for ($i=0; $i<1; $i++) {
+for ($i=0; $i<30; $i++) {
     $waiter->placeOrder($i, ['cake']);
 }
 

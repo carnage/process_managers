@@ -9,6 +9,7 @@ use ProcessManagers\Message\CookingTimedOut;
 use ProcessManagers\Message\MessageFactory;
 use ProcessManagers\Message\MessageInterface;
 use ProcessManagers\Message\OrderCooked;
+use ProcessManagers\Message\OrderCookedTwice;
 use ProcessManagers\Message\OrderPaid;
 use ProcessManagers\Message\OrderPlaced;
 use ProcessManagers\Message\OrderPriced;
@@ -34,7 +35,8 @@ class Zimba extends AbstractMessageHandler
      */
     private $messageFactory;
 
-    private $cooking;
+    private $cooking = false;
+    private $cooked = false;
 
     public function __construct(PublishInterface $queue, MessageFactory $messageFactory, callable $done)
     {
@@ -60,11 +62,22 @@ class Zimba extends AbstractMessageHandler
     public function handleOrderCooked(OrderCooked $orderMessage)
     {
         $this->cooking = false;
-        $this->queue->publish(
-            $this->messageFactory->createOrderMessageFromPrevious(OrderSpiked::class, $orderMessage)
-        );
-        $done = $this->done;
-        $done();
+        if ($this->cooked) {
+            $this->queue->publish(
+                $this->messageFactory->createOrderMessageFromPrevious(OrderCookedTwice::class, $orderMessage)
+            );
+        } else {
+            $this->cooked = true;
+            $this->cooking = false;
+            $this->queue->publish(
+                $this->messageFactory->createOrderMessageFromPrevious(OrderSpiked::class, $orderMessage)
+            );
+            //Due to this closing the proc manager, we never receive a second order cooked.
+            //Could be handled by promoting the Spike to an actor.
+            $done = $this->done;
+            $done();
+        }
+
     }
 
     public function handleOrderPriced(OrderPriced $orderMessage)
