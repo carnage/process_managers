@@ -15,7 +15,7 @@ use ProcessManagers\Message\PriceOrder;
 use ProcessManagers\Message\TakePayment;
 use ProcessManagers\PublishInterface;
 
-class British extends AbstractMessageHandler
+class Zimba extends AbstractMessageHandler
 {
     use AlwaysReady;
 
@@ -42,15 +42,17 @@ class British extends AbstractMessageHandler
     public function handleOrderPlaced(OrderPlaced $orderMessage)
     {
         $this->queue->publish(
-            $this->messageFactory->createOrderMessageFromPrevious(CookFood::class, $orderMessage)
+            $this->messageFactory->createOrderMessageFromPrevious(PriceOrder::class, $orderMessage)
         );
     }
 
     public function handleOrderCooked(OrderCooked $orderMessage)
     {
         $this->queue->publish(
-            $this->messageFactory->createOrderMessageFromPrevious(PriceOrder::class, $orderMessage)
+            $this->messageFactory->createOrderMessageFromPrevious(OrderSpiked::class, $orderMessage)
         );
+        $done = $this->done;
+        $done();
     }
 
     public function handleOrderPriced(OrderPriced $orderMessage)
@@ -63,9 +65,7 @@ class British extends AbstractMessageHandler
     public function handleOrderPaid(OrderPaid $orderMessage)
     {
         $this->queue->publish(
-            $this->messageFactory->createOrderMessageFromPrevious(OrderSpiked::class, $orderMessage)
+            $this->messageFactory->createOrderMessageFromPrevious(CookFood::class, $orderMessage)
         );
-        $done = $this->done;
-        $done();
     }
 }

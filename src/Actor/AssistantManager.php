@@ -37,7 +37,7 @@ class AssistantManager extends AbstractMessageHandler
     protected function handlePriceOrder(PriceOrder $orderCooked)
     {
         $order = $orderCooked->getOrder();
-        $subTotal = $this->calculatePrice($order->getIngredients(), $order->getCookTime());
+        $subTotal = $this->calculatePrice($order->getItems());
 
         $tax = $subTotal * (self::TAX_RATE / 100);
         $order->addPrices($subTotal, $tax, $subTotal+$tax);
@@ -50,14 +50,12 @@ class AssistantManager extends AbstractMessageHandler
         });
     }
 
-    private function calculatePrice(array $ingredients, int $cookTime)
+    private function calculatePrice(array $ingredients)
     {
         $price = 0;
         foreach ($ingredients as $ingredient) {
             $price++;
         }
-
-        $price += $cookTime * 4;
 
         return $price;
     }

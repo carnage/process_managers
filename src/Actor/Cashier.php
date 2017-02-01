@@ -40,7 +40,7 @@ class Cashier extends AbstractMessageHandler
         $order = $orderPriced->getOrder();
         $order->paid();
 
-        $this->loop->addTimer(1,function () use ($orderPriced) {
+        $this->loop->addTimer(3,function () use ($orderPriced) {
             $this->queue->publish(
                 $this->messageFactory->createOrderMessageFromPrevious(OrderPaid::class, $orderPriced)
             );

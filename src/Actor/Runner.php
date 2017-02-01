@@ -3,15 +3,17 @@
 namespace ProcessManagers\Actor;
 
 use ProcessManagers\Actor\OrderStates\British;
+use ProcessManagers\Actor\OrderStates\OrderStateFactory;
 use ProcessManagers\Handler\AbstractMessageHandler;
 use ProcessManagers\Handler\AlwaysReady;
 use ProcessManagers\Handler\HandleMessageInterface;
+use ProcessManagers\Handler\QueueLengthInterface;
 use ProcessManagers\Message\MessageFactory;
 use ProcessManagers\Message\MessageInterface;
 use ProcessManagers\Message\OrderPlaced;
 use ProcessManagers\PublishInterface;
 
-class Runner extends AbstractMessageHandler
+class Runner extends AbstractMessageHandler implements QueueLengthInterface
 {
     use AlwaysReady;
     private $queue;
@@ -21,11 +23,20 @@ class Runner extends AbstractMessageHandler
      * @var MessageFactory
      */
     private $messageFactory;
+    /**
+     * @var OrderStateFactory
+     */
+    private $orderStateFactory;
+    /**
+     * @var string
+     */
+    private $name;
 
-    public function __construct(PublishInterface $queue, MessageFactory $messageFactory)
+    public function __construct(string $name, PublishInterface $queue, OrderStateFactory $orderStateFactory)
     {
         $this->queue = $queue;
-        $this->messageFactory = $messageFactory;
+        $this->orderStateFactory = $orderStateFactory;
+        $this->name = $name;
     }
 
     public function handleOrderPlaced(OrderPlaced $orderMessage)
@@ -34,11 +45,7 @@ class Runner extends AbstractMessageHandler
         $done = function () use ($corrId) {
             unset($this->orders[$corrId]);
         };
-        $this->orders[$corrId] = new British(
-            $this->queue,
-            $this->messageFactory,
-            $done
-        );
+        $this->orders[$corrId] = $this->orderStateFactory->createProcess($orderMessage->getOrder(), $done);
 
         $this->handleMessage($orderMessage);
     }
@@ -58,4 +65,16 @@ class Runner extends AbstractMessageHandler
 
         return 'handleMessage';
     }
+
+    public function getQueueLength(): int
+    {
+        return count($this->orders);
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+
 }

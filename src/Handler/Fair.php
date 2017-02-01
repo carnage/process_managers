@@ -16,14 +16,18 @@ class Fair implements HandleMessageInterface, QueueLengthInterface
     private $loop;
 
     private $queue = [];
+    /**
+     * @var string
+     */
+    private $name;
 
-    public function __construct(LoopInterface $loop, HandleMessageInterface ... $handleOrderInterfaces)
+    public function __construct(string $name, LoopInterface $loop, HandleMessageInterface ... $handleOrderInterfaces)
     {
         $this->handlers = $handleOrderInterfaces;
         $this->loop = $loop;
         $loop->addPeriodicTimer(0.1, function () {
             $handler = array_shift($this->handlers);
-            if ($handler instanceof QueueLengthInterface && $handler->getQueueLength() < 2) {
+            if ($handler instanceof QueueLengthInterface && $handler->getQueueLength() < 1) {
                 $order = array_shift($this->queue);
                 if ($order) {
                     $handler->handle($order);
@@ -31,6 +35,7 @@ class Fair implements HandleMessageInterface, QueueLengthInterface
             }
             array_push($this->handlers, $handler);
         });
+        $this->name = $name;
     }
 
     public function handle(MessageInterface $order)
@@ -46,5 +51,13 @@ class Fair implements HandleMessageInterface, QueueLengthInterface
     public function getQueueLength(): int
     {
         return count($this->queue);
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
     }
 }

@@ -5,8 +5,9 @@ namespace ProcessManagers\Handler;
 use ProcessManagers\Message\MessageInterface;
 use React\EventLoop\LoopInterface;
 
-class QueueHandler implements HandleMessageInterface, QueueLengthInterface
+class TtlQueue implements HandleMessageInterface, QueueLengthInterface
 {
+    private $ttl = 5000;
     use AlwaysReady;
     private $handler;
     private $queue = [];
@@ -20,8 +21,8 @@ class QueueHandler implements HandleMessageInterface, QueueLengthInterface
         $this->handler = $handler;
         $loop->addPeriodicTimer(0.1, function () {
             if ($this->handler->isReady()) {
-                $order = array_shift($this->queue);
-                if ($order && rand(0,3)) {
+                $order = $this->nextQueueItem();
+                if ($order) {
                     $this->handler->handle($order);
                 }
             }
@@ -31,7 +32,7 @@ class QueueHandler implements HandleMessageInterface, QueueLengthInterface
 
     public function handle(MessageInterface $order)
     {
-        array_push($this->queue, $order);
+        array_push($this->queue, ['t'=> microtime(true), 'o' => $order]);
     }
 
     public static function getHandleMethod(string $message): string
@@ -50,5 +51,22 @@ class QueueHandler implements HandleMessageInterface, QueueLengthInterface
     public function getName(): string
     {
         return $this->name;
+    }
+    /**
+     * @param $this
+     * @return mixed
+     */
+    private function nextQueueItem()
+    {
+        if (count($this->queue)) {
+            return null;
+        }
+
+        $order = array_shift($this->queue);
+        if (($order['t'] + $this->ttl) < microtime(true)) {
+            return $order['o'];
+        }
+
+        return $this->nextQueueItem();
     }
 }

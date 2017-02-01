@@ -14,12 +14,14 @@ class Order
     private $ingredients = [];
     private $paid;
     private $cookedBy;
+    private $dodgy;
 
-    public function __construct(string $orderId, int $tableNumber, array $items)
+    public function __construct(string $orderId, int $tableNumber, array $items, $dodgy = false)
     {
         $this->orderId = $orderId;
         $this->tableNumber = $tableNumber;
         $this->items = $items;
+        $this->dodgy = $dodgy;
     }
 
     /**
@@ -119,5 +121,10 @@ class Order
     public function paid()
     {
         $this->paid = true;
+    }
+
+    public function isDodgy()
+    {
+        return $this->dodgy;
     }
 }
