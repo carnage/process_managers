@@ -39,11 +39,21 @@ class British extends AbstractMessageHandler
 
     private $cooked = false;
 
-    public function __construct(PublishInterface $queue, MessageFactory $messageFactory, callable $done)
+    public function __construct(MessageFactory $messageFactory, callable $done)
     {
         $this->done = $done;
-        $this->queue = $queue;
+        $this->queue = new class implements PublishInterface {
+            public function publish(MessageInterface $message)
+            {
+            }
+        };
+
         $this->messageFactory = $messageFactory;
+    }
+
+    public function goLive(PublishInterface $queue)
+    {
+        $this->queue = $queue;
     }
 
     public function handleOrderPlaced(OrderPlaced $orderMessage)

@@ -33,7 +33,6 @@ class OrderStateFactory
             );
         } else {
             return new British(
-                $this->queue,
                 $this->messageFactory,
                 $done
             );

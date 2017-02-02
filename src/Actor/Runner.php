@@ -17,12 +17,8 @@ class Runner extends AbstractMessageHandler implements QueueLengthInterface
 {
     use AlwaysReady;
     private $queue;
-    /** @var  HandleMessageInterface[] */
+
     private $orders;
-    /**
-     * @var MessageFactory
-     */
-    private $messageFactory;
     /**
      * @var OrderStateFactory
      */
@@ -41,20 +37,27 @@ class Runner extends AbstractMessageHandler implements QueueLengthInterface
 
     public function handleOrderPlaced(OrderPlaced $orderMessage)
     {
-        $corrId = $orderMessage->getCorrId();
-        $done = function () use ($corrId) {
-            unset($this->orders[$corrId]);
-        };
-        $this->orders[$corrId] = $this->orderStateFactory->createProcess($orderMessage->getOrder(), $done);
-
+        $this->orders[$orderMessage->getCorrId()] = 'I care about this';
         $this->handleMessage($orderMessage);
     }
 
     public function handleMessage(MessageInterface $orderMessage)
     {
-        if (isset($this->orders[$orderMessage->getCorrId()])) {
-            $this->orders[$orderMessage->getCorrId()]->handle($orderMessage);
+        if (!method_exists($orderMessage, 'getOrder')) {
+            return;
         }
+
+        $corrId = $orderMessage->getCorrId();
+        $done = function () use ($corrId) {
+            unset($this->orders[$corrId]);
+        };
+        $pm = $this->orderStateFactory->createProcess($orderMessage->getOrder(), $done);
+        foreach ($this->queue->getHistory($corrId) as $message) {
+            $pm->handle($message);
+        }
+
+        $pm->goLive($this->queue);
+        $pm->handle($orderMessage);
     }
 
     public static function getHandleMethod(string $message): string
@@ -75,6 +78,4 @@ class Runner extends AbstractMessageHandler implements QueueLengthInterface
     {
         return $this->name;
     }
-
-
 }

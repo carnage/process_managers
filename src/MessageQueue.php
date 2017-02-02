@@ -9,6 +9,7 @@ use ProcessManagers\Message\MessageInterface;
 class MessageQueue implements PublishInterface
 {
     private $subs = [];
+    private $history = [];
     private $verbose = false;
 
     public function publish(MessageInterface $message)
@@ -28,11 +29,19 @@ class MessageQueue implements PublishInterface
                 }
             }
             if ($this->verbose) echo "\n";
+
         }
+
+        $this->history[$message->getCorrId()][] = $message;
     }
 
     public function subscribe(string $messageType, HandleMessageInterface $handler)
     {
         $this->subs[$messageType][] = $handler;
+    }
+
+    public function getHistory(string $for): array
+    {
+        return isset($this->history[$for]) ? $this->history[$for] : [];
     }
 }
